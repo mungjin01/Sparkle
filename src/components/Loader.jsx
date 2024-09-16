@@ -54,7 +54,7 @@ const Container = styled.div`
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 20px;
   align-items: center;
 `;
@@ -64,7 +64,7 @@ const ProgressBar = styled.div`
   color: white;
 `;
 const EnterBtn = styled.div`
-  animation: ${blink} 1s 1.5s infinite;
+  animation: ${blink} 1.5s infinite;
   transition: 0.4s;
   font-size: 16px;
   outline: none;

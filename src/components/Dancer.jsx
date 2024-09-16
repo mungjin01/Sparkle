@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unknown-property */
-import { Loader, useAnimations, useGLTF, useScroll } from "@react-three/drei";
+import { useAnimations, useGLTF, useScroll } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { useRecoilValue } from "recoil";
 import { IsEnteredAtom } from "../stores";
+import { Loader } from "./Loader";
 
 export const Dancer = () => {
   const isEntered = useRecoilValue(IsEnteredAtom);
