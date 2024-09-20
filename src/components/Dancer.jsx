@@ -6,7 +6,7 @@ import {
   useTexture,
 } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRecoilValue } from "recoil";
 import { IsEnteredAtom } from "../stores";
 import { Loader } from "./Loader";
@@ -18,18 +18,33 @@ import { Circle } from "@react-three/drei";
 import { Points } from "@react-three/drei";
 
 let timeline;
+
+const colors = {
+  boxMaterialColor: "#DC4F00",
+};
+
 export const Dancer = () => {
   const three = useThree();
   const isEntered = useRecoilValue(IsEnteredAtom);
   const dancerRef = useRef(null);
+  const boxRef = useRef(null);
+  const starGroupRef1 = useRef(null);
+  const starGroupRef2 = useRef(null);
+  const starGroupRef3 = useRef(null);
+  const rectAreaLightRef = useRef(null);
+  const hemisphereLightRef = useRef(null);
+
   const { scene, animations } = useGLTF("models/dancer.glb");
   console.log(scene, animations);
 
   const texture = useTexture("texture/sparkle.png");
   const { actions } = useAnimations(animations, dancerRef);
 
+  const [currentAnimation, setCurrentAnimation] = useState("wave");
+  const [rotateFinished, setRotateFinished] = useState(false);
+
   const { positions } = useMemo(() => {
-    const count = 250;
+    const count = 500;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count * 3; i += 1) {
       positions[i] = (Math.random() - 0.5) * 25;
@@ -43,12 +58,47 @@ export const Dancer = () => {
   useFrame(() => {
     if (!isEntered) return;
     timeline.seek(scroll.offset * timeline.duration());
+    boxRef.current.material.color = new THREE.Color(colors.boxMaterialColor);
+
+    if (rotateFinished) {
+      setCurrentAnimation("breakdancingEnd");
+    } else {
+      setCurrentAnimation("wave");
+    }
   });
 
   useEffect(() => {
     if (!isEntered) return;
+    three.camera.lookAt(1, 2, 0);
     actions["wave"].play();
-  }, [actions, isEntered]);
+    three.scene.background = new THREE.Color(colors.boxMaterialColor);
+    scene.traverse((obj) => {
+      if (obj.isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+  }, [actions, isEntered, scene, three.camera, three.scene]);
+
+  useEffect(() => {
+    let timeout;
+    if (currentAnimation === "wave") {
+      actions[currentAnimation]?.reset().fadeIn(0.5).play();
+    } else {
+      actions[currentAnimation]
+        ?.reset()
+        .fadeIn(0.5)
+        .play()
+        .setLoop(THREE.LoopOnce, 1);
+
+      timeout = setTimeout(() => {
+        if (actions[currentAnimation]) {
+          actions[currentAnimation].paused = true;
+        }
+      }, 8000);
+      return () => clearTimeout(timeout);
+    }
+  }, [actions, currentAnimation]);
 
   useEffect(() => {
     if (!isEntered) return;
@@ -59,6 +109,34 @@ export const Dancer = () => {
       { x: 0, y: 6, z: 12, duration: 2.5 }
     );
     gsap.fromTo(three.camera.rotation, { z: Math.PI }, { z: 0, duration: 2.5 });
+    gsap.fromTo(
+      colors,
+      { boxMaterialColor: "#0C0400" },
+      { duration: 2.5, boxMaterialColor: "#DC4F00" }
+    );
+    gsap.to(starGroupRef1.current, {
+      yoyo: true,
+      duration: 2,
+      repeat: -1,
+      ease: "linear",
+      size: 0.05,
+    });
+
+    gsap.to(starGroupRef2.current, {
+      yoyo: true,
+      duration: 3,
+      repeat: -1,
+      ease: "linear",
+      size: 0.05,
+    });
+
+    gsap.to(starGroupRef3.current, {
+      yoyo: true,
+      duration: 4,
+      repeat: -1,
+      ease: "linear",
+      size: 0.05,
+    });
   }, [isEntered, three.camera.position, three.camera.rotation]);
 
   useEffect(() => {
@@ -78,7 +156,11 @@ export const Dancer = () => {
       <>
         <primitive ref={dancerRef} object={scene} scale={0.05} />
         <ambientLight intensity={2} />
-        <rectAreaLight position={[0, 10, 0]} intensity={30} />
+        <rectAreaLight
+          ref={rectAreaLightRef}
+          position={[0, 10, 0]}
+          intensity={30}
+        />
         <pointLight
           position={[0, 5, 0]}
           intensity={45}
@@ -86,12 +168,13 @@ export const Dancer = () => {
           receiveShadow
         />
         <hemisphereLight
+          ref={hemisphereLightRef}
           position={[0, 5, 0]}
           intensity={0}
           groundColor={"Lime"}
           color="blue"
         />
-        <Box position={[0, 0, 0]} args={[100, 100, 100]}>
+        <Box ref={boxRef} position={[0, 0, 0]} args={[100, 100, 100]}>
           <meshStandardMaterial color="#DC4F00" side={THREE.DoubleSide} />
         </Box>
         <Circle
@@ -106,6 +189,7 @@ export const Dancer = () => {
 
         <Points positions={positions.slice(0, positions.length / 3)}>
           <pointsMaterial
+            ref={starGroupRef1}
             size={0.5}
             color={new THREE.Color("#DC4F00")}
             sizeAttenuation
@@ -122,6 +206,7 @@ export const Dancer = () => {
           )}
         >
           <pointsMaterial
+            ref={starGroupRef2}
             size={0.5}
             color={new THREE.Color("#DC4F00")}
             sizeAttenuation
@@ -138,6 +223,7 @@ export const Dancer = () => {
           )}
         >
           <pointsMaterial
+            ref={starGroupRef3}
             size={0.5}
             color={new THREE.Color("#DC4F00")}
             sizeAttenuation
