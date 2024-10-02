@@ -96,7 +96,10 @@ export const Dancer = () => {
           actions[currentAnimation].paused = true;
         }
       }, 8000);
-      return () => clearTimeout(timeout);
+      return () => {
+        clearTimeout(timeout);
+        actions[currentAnimation]?.reset().fadeOut(0.5).stop();
+      };
     }
   }, [actions, currentAnimation]);
 
@@ -142,14 +145,43 @@ export const Dancer = () => {
   useEffect(() => {
     if (!isEntered) return;
     if (!dancerRef.current) return;
+    const pivot = new THREE.Group();
+    pivot.position.copy(dancerRef.current.position);
+    pivot.add(three.camera);
+    three.scene.add(pivot);
+
     timeline = gsap.timeline();
     timeline
       .from(dancerRef.current.rotation, { y: -4 * Math.PI, duration: 4 }, 0.5)
       .from(dancerRef.current.position, { x: 3, duration: 4 }, "<")
       .to(three.camera.position, { x: 2, z: 8, duration: 10 }, "<")
+      .to(colors, { duration: 10, boxMaterialColor: "#0C0400" }, "<")
+      .to(pivot.rotation, { y: Math.PI, duration: 10 })
+      .to(three.camera.position, { x: -4, z: 12, duration: 10 })
       .to(three.camera.position, { x: 0, z: 6, duration: 10 })
-      .to(three.camera.position, { x: 0, z: 16, duration: 10 });
-  }, [isEntered, three.camera.position]);
+      .to(three.camera.position, {
+        x: 0,
+        z: 16,
+        duration: 10,
+        onUpdate: () => {
+          setRotateFinished(false);
+        },
+      })
+      .to(hemisphereLightRef.current, { intensity: 30, duration: 5 })
+      .to(
+        pivot.rotation,
+        {
+          y: 4 * Math.PI,
+          duration: 15,
+          onUpdate: () => {
+            setRotateFinished(true);
+          },
+        },
+        "<"
+      )
+      .to(colors, { duration: 15, boxMaterialColor: "#DC4F00" });
+    return () => three.scene.remove(pivot);
+  }, [isEntered, three.camera, three.camera.position, three.scene]);
 
   if (isEntered) {
     return (
