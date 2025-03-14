@@ -42,7 +42,7 @@ const blink = keyframes`
 const BlurredBackground = styled.div`
   width: 400px;
   height: 400px;
-  background-color: red;
+  background-color: #7e94bf;
   border-radius: 50%;
   filter: blur(300px);
 `;
@@ -76,6 +76,6 @@ const EnterBtn = styled.div`
   cursor: pointer;
   &:hover {
     background-color: #ccc;
-    color: red;
+    color: #1e2d59;
   }
 `;

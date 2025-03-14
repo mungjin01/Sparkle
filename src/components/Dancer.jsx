@@ -14,13 +14,13 @@ import gsap from "gsap";
 import { useThree } from "@react-three/fiber";
 import { Box } from "@react-three/drei";
 import * as THREE from "three";
-import { Circle } from "@react-three/drei";
+import { Sphere } from "@react-three/drei";
 import { Points } from "@react-three/drei";
 
 let timeline;
 
 const colors = {
-  boxMaterialColor: "#DC4F00",
+  boxMaterialColor: "#2A3967",
 };
 
 export const Dancer = () => {
@@ -34,13 +34,13 @@ export const Dancer = () => {
   const rectAreaLightRef = useRef(null);
   const hemisphereLightRef = useRef(null);
 
-  const { scene, animations } = useGLTF("models/dancer.glb");
+  const { scene, animations } = useGLTF("models/real_keyboard_test.glb");
   console.log(scene, animations);
 
   const texture = useTexture("texture/sparkle.png");
   const { actions } = useAnimations(animations, dancerRef);
 
-  const [currentAnimation, setCurrentAnimation] = useState("wave");
+  const [currentAnimation, setCurrentAnimation] = useState("piano");
   const [rotateFinished, setRotateFinished] = useState(false);
 
   const { positions } = useMemo(() => {
@@ -61,7 +61,7 @@ export const Dancer = () => {
     boxRef.current.material.color = new THREE.Color(colors.boxMaterialColor);
 
     if (rotateFinished) {
-      setCurrentAnimation("breakdancingEnd");
+      setCurrentAnimation("piano");
     } else {
       setCurrentAnimation("wave");
     }
@@ -70,7 +70,7 @@ export const Dancer = () => {
   useEffect(() => {
     if (!isEntered) return;
     three.camera.lookAt(1, 2, 0);
-    actions["wave"].play();
+    actions["piano"].play();
     three.scene.background = new THREE.Color(colors.boxMaterialColor);
     scene.traverse((obj) => {
       if (obj.isMesh) {
@@ -82,7 +82,7 @@ export const Dancer = () => {
 
   useEffect(() => {
     let timeout;
-    if (currentAnimation === "wave") {
+    if (currentAnimation === "piano") {
       actions[currentAnimation]?.reset().fadeIn(0.5).play();
     } else {
       actions[currentAnimation]
@@ -115,11 +115,11 @@ export const Dancer = () => {
     gsap.fromTo(
       colors,
       { boxMaterialColor: "#0C0400" },
-      { duration: 2.5, boxMaterialColor: "#DC4F00" }
+      { duration: 2.5, boxMaterialColor: "#2A3967" }
     );
     gsap.to(starGroupRef1.current, {
       yoyo: true,
-      duration: 2,
+      duration: 1,
       repeat: -1,
       ease: "linear",
       size: 0.05,
@@ -127,7 +127,7 @@ export const Dancer = () => {
 
     gsap.to(starGroupRef2.current, {
       yoyo: true,
-      duration: 3,
+      duration: 1,
       repeat: -1,
       ease: "linear",
       size: 0.05,
@@ -135,7 +135,7 @@ export const Dancer = () => {
 
     gsap.to(starGroupRef3.current, {
       yoyo: true,
-      duration: 4,
+      duration: 2,
       repeat: -1,
       ease: "linear",
       size: 0.05,
@@ -179,14 +179,19 @@ export const Dancer = () => {
         },
         "<"
       )
-      .to(colors, { duration: 15, boxMaterialColor: "#DC4F00" });
+      .to(colors, { duration: 15, boxMaterialColor: "#2A3967" });
     return () => three.scene.remove(pivot);
   }, [isEntered, three.camera, three.camera.position, three.scene]);
 
   if (isEntered) {
     return (
       <>
-        <primitive ref={dancerRef} object={scene} scale={0.05} />
+        <primitive
+          ref={dancerRef}
+          object={scene}
+          scale={0.03}
+          position={[0, 0, 0]}
+        />
         <ambientLight intensity={2} />
         <rectAreaLight
           ref={rectAreaLightRef}
@@ -207,23 +212,23 @@ export const Dancer = () => {
           color="blue"
         />
         <Box ref={boxRef} position={[0, 0, 0]} args={[100, 100, 100]}>
-          <meshStandardMaterial color="#DC4F00" side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#2A3967" side={THREE.DoubleSide} />
         </Box>
-        <Circle
+        <Sphere
           castShadow
           receiveShadow
-          args={[8, 32]}
+          args={[6, 32]}
           rotation-x={Math.PI / 2}
-          position-y={-4.4}
+          position={[0, -6, 0]}
         >
-          <meshStandardMaterial color="#DC4F00" side={THREE.DoubleSide} />
-        </Circle>
+          <meshStandardMaterial color="#29465E" side={THREE.DoubleSide} />
+        </Sphere>
 
         <Points positions={positions.slice(0, positions.length / 3)}>
           <pointsMaterial
             ref={starGroupRef1}
             size={0.5}
-            color={new THREE.Color("#DC4F00")}
+            color={new THREE.Color("#E0F0FD")}
             sizeAttenuation
             depthWrite
             alphaMap={texture}
@@ -240,7 +245,7 @@ export const Dancer = () => {
           <pointsMaterial
             ref={starGroupRef2}
             size={0.5}
-            color={new THREE.Color("#DC4F00")}
+            color={new THREE.Color("#E0F0FD")}
             sizeAttenuation
             depthWrite
             alphaMap={texture}
@@ -257,7 +262,7 @@ export const Dancer = () => {
           <pointsMaterial
             ref={starGroupRef3}
             size={0.5}
-            color={new THREE.Color("#DC4F00")}
+            color={new THREE.Color("#E0F0FD")}
             sizeAttenuation
             depthWrite
             alphaMap={texture}
